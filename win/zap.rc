@@ -1,0 +1,28 @@
+// The application icon and version details. Resource id 1 is what Explorer shows for the exe.
+// ZAP_VERSION_COMMA and ZAP_VERSION_STR come from the project version in CMakeLists.txt.
+#include <winver.h>
+
+1 ICON "zap.ico"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION ZAP_VERSION_COMMA
+PRODUCTVERSION ZAP_VERSION_COMMA
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileDescription", "Zap"
+            VALUE "ProductName", "Zap"
+            VALUE "FileVersion", ZAP_VERSION_STR
+            VALUE "ProductVersion", ZAP_VERSION_STR
+            VALUE "OriginalFilename", "Zap.exe"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END

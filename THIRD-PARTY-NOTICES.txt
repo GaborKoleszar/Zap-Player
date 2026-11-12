@@ -1,0 +1,25 @@
+Zap - third-party software
+==========================
+
+Zap itself is free software under the GNU General Public License, version 3 or (at your
+option) any later version; see LICENSE.txt. Its source code is in the Zap repository.
+
+Zap is distributed together with the following component.
+
+libmpv (libmpv-2.dll)
+---------------------
+The mpv media player library, including the libraries built into it (FFmpeg, libass, libplacebo
+and others). This is a GPL build: mpv is licensed under the GNU General Public License,
+version 2 or later, and the combined binary is distributed here under the terms of the GNU
+General Public License, version 3 (LICENSE.txt).
+
+  Binary:  release 20261111 of https://github.com/shinchiro/mpv-winbuild-cmake
+           (asset mpv-dev-x86_64-*), unmodified.
+           SHA-256 of libmpv-2.dll:
+           88504ee5560942a955405e99dfb5971368e4cf851321f36565bf2a667271db1b
+  Source:  https://github.com/mpv-player/mpv
+           The build scripts at https://github.com/shinchiro/mpv-winbuild-cmake (same
+           release tag) name and fetch the exact sources of mpv and of every library built
+           into it.
+
+There is no warranty for any of this software, to the extent permitted by law.

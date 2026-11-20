@@ -1,0 +1,66 @@
+name: Release
+
+# Pushing a version tag (for example v0.2.0) builds Zap, runs the unit tests, builds the
+# installer and publishes it as a GitHub Release. The tag must match project(Zap VERSION ...)
+# in CMakeLists.txt.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check tag matches the project version
+        shell: pwsh
+        run: |
+          $m = Select-String -Path CMakeLists.txt -Pattern 'project\(Zap VERSION (\d+\.\d+\.\d+)'
+          if (-not $m) { throw 'Could not read the version from CMakeLists.txt.' }
+          $version = $m.Matches[0].Groups[1].Value
+          if ("v$version" -ne $env:GITHUB_REF_NAME) {
+            throw "Tag $env:GITHUB_REF_NAME does not match project version $version in CMakeLists.txt."
+          }
+
+      - name: Fetch libmpv
+        shell: pwsh
+        run: ./scripts/fetch-mpv.ps1
+
+      - name: Generate sample media
+        shell: pwsh
+        run: |
+          if (-not (Get-Command ffmpeg -ErrorAction Ignore)) { choco install ffmpeg -y --no-progress }
+          ./bench/make-sample.ps1
+
+      # Same folder as the release preset, which is where installer/zap.iss looks for the build.
+      - name: Configure
+        run: cmake -S . -B build/release -A x64
+
+      - name: Build
+        run: cmake --build build/release --config Release --parallel
+
+      - name: Run unit tests
+        run: ctest --test-dir build/release -C Release --output-on-failure
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          if (-not (Get-Command iscc -ErrorAction Ignore) -and
+              -not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup -y --no-progress
+          }
+          ./scripts/build-installer.ps1 -SkipBuild
+
+      - name: Publish release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $installer = Get-ChildItem build/installer -Filter 'ZapSetup-*.exe' | Select-Object -First 1
+          if (-not $installer) { throw 'No installer was built.' }
+          gh release create $env:GITHUB_REF_NAME $installer.FullName --title "Zap $($env:GITHUB_REF_NAME.TrimStart('v'))" --generate-notes

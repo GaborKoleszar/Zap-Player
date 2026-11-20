@@ -32,6 +32,8 @@ jobs:
 
       - name: Fetch libmpv
         shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: ./scripts/fetch-mpv.ps1
 
       # The player tests skip themselves without sample media; generate it so they run.

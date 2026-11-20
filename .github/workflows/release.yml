@@ -29,6 +29,8 @@ jobs:
 
       - name: Fetch libmpv
         shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: ./scripts/fetch-mpv.ps1
 
       - name: Generate sample media

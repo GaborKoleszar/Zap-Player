@@ -23,7 +23,10 @@ $haveDll = Test-Path (Join-Path $dest "libmpv-2.dll")
 New-Item -ItemType Directory -Force $dest | Out-Null
 
 if (-not $haveDll) {
-    $release = Invoke-RestMethod "https://api.github.com/repos/shinchiro/mpv-winbuild-cmake/releases/tags/$Tag" -Headers @{ 'User-Agent' = 'fetch-mpv' }
+    # Anonymous API calls share a small per-IP limit, which CI runners often hit; use a token when one is set.
+    $apiHeaders = @{ 'User-Agent' = 'fetch-mpv' }
+    if ($env:GITHUB_TOKEN) { $apiHeaders['Authorization'] = "Bearer $env:GITHUB_TOKEN" }
+    $release = Invoke-RestMethod "https://api.github.com/repos/shinchiro/mpv-winbuild-cmake/releases/tags/$Tag" -Headers $apiHeaders
     $asset = $release.assets | Where-Object { $_.name -match '^mpv-dev-x86_64-\d' } | Select-Object -First 1
     if (-not $asset) { throw "No mpv-dev-x86_64 asset found in release $Tag." }
     $archive = Join-Path $dest $asset.name

@@ -32,7 +32,24 @@ jobs:
 
       - name: Fetch libmpv
         shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: ./scripts/fetch-mpv.ps1
+
+      # The player tests skip themselves without sample media; generate it so they run.
+      - name: Cache sample media
+        id: media-cache
+        uses: actions/cache@v4
+        with:
+          path: bench/media
+          key: media-${{ runner.os }}-${{ hashFiles('bench/make-sample.ps1') }}
+
+      - name: Generate sample media
+        if: steps.media-cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          if (-not (Get-Command ffmpeg -ErrorAction Ignore)) { choco install ffmpeg -y --no-progress }
+          ./bench/make-sample.ps1
 
       # Lets CMake pick the newest Visual Studio on the runner instead of the
       # generator pinned in CMakePresets.json.

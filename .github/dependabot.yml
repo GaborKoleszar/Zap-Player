@@ -1,0 +1,11 @@
+version: 2
+updates:
+  # Keeps the actions used in .github/workflows up to date. Each update arrives as a PR
+  # and has to pass the build-and-test check like any other change.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]

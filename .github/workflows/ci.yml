@@ -1,0 +1,54 @@
+name: CI
+
+# Builds the app and runs the unit tests on every pull request to main.
+# Branch protection on main requires the "build-and-test" check to pass before merging.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache libmpv
+        id: mpv-cache
+        uses: actions/cache@v4
+        with:
+          path: third_party/mpv
+          key: mpv-${{ runner.os }}-${{ hashFiles('scripts/fetch-mpv.ps1') }}
+
+      - name: Fetch libmpv
+        shell: pwsh
+        run: ./scripts/fetch-mpv.ps1
+
+      # Lets CMake pick the newest Visual Studio on the runner instead of the
+      # generator pinned in CMakePresets.json.
+      - name: Configure
+        run: cmake -S . -B build/ci -A x64
+
+      - name: Build
+        run: cmake --build build/ci --config Release --parallel
+
+      - name: Run unit tests
+        run: ctest --test-dir build/ci -C Release --output-on-failure --output-junit test-results.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: build/ci/test-results.xml
+          if-no-files-found: warn

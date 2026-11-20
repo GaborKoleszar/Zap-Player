@@ -21,11 +21,11 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Cache libmpv
         id: mpv-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: third_party/mpv
           key: mpv-${{ runner.os }}-${{ hashFiles('scripts/fetch-mpv.ps1') }}
@@ -39,7 +39,7 @@ jobs:
       # The player tests skip themselves without sample media; generate it so they run.
       - name: Cache sample media
         id: media-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: bench/media
           key: media-${{ runner.os }}-${{ hashFiles('bench/make-sample.ps1') }}
@@ -64,7 +64,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: build/ci/test-results.xml
